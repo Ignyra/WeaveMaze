@@ -25,7 +25,8 @@ lazy val root = (project in file("."))
   .settings(
     commonSettings,
     libraryDependencies ++= scalafxDependencies,
-
+    
+    //not nessescary
     javaOptions ++= Seq(
       "--module-path", (Compile / fullClasspath).value
         .map(_.data.getAbsolutePath)
