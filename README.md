@@ -4,15 +4,15 @@
 
 ## Running
 
+### IntelliJ
 
-### Sbt
-Inside the project's directory:
+Open Project, and run WeaveMaze in Main.scala.
+
+### sbt
+Have sbt and JDK installed, and inside the project's directory, run:
 
 ```bash
 sbt run
 ```
 
 
-### intilji 
-
-Open Project, and run WeaveMaze in Main.scala.
