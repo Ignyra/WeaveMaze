@@ -15,4 +15,8 @@ Have sbt and JDK installed, and inside the project's directory, run:
 sbt run
 ```
 
+## Controls
 
+- Arrow Keys for movement
+- Hold Space to show the path
+- If the player reached target, click Enter to create a new target

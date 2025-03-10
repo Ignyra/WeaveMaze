@@ -10,6 +10,8 @@ import scalafx.Includes.jfxScene2sfx
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.Pane
 
+import scalafx.scene.shape.Circle
+import scalafx.scene.paint.Color
 
 import scalafx.Includes._
 import scalafx.scene.control.Button
@@ -29,9 +31,12 @@ object WeaveMaze extends JFXApp3 {
   var maze_renderer = Maze_Renderer(maze)
   var (gridPane, mazeWidth, mazeHeight) = maze_renderer.generateMazeGui()
   
-  val solution = new Pane{}
+  val tiles = maze_renderer.tiles
+  val solution_renderer = Solution_Renderer(tiles, mazeWidth, mazeHeight)
+
+
   val stackPane = new Pane {
-    children = Seq(gridPane, solution)
+    children = Seq(gridPane, solution_renderer.solutionPane)
   }
    
   //for scaling
@@ -40,57 +45,6 @@ object WeaveMaze extends JFXApp3 {
   
   val aspectRatio:Double = mazeWidth/mazeHeight
 
-  var generateButton: Button = _
-  var solveButton: Button = _
-  var buttonBox: HBox = _
-
-  def _update1():Unit =
-
-    maze = Maze(15,15,0.3)
-    maze_renderer = Maze_Renderer(maze)
-
-    val new_pane = maze_renderer.generateMazeGui()
-    
-    gridPane = new_pane(0)
-    mazeWidth = new_pane(1) 
-    mazeHeight = new_pane(2)
-    
-    
-    scalafx.application.Platform.runLater {
-      stackPane.children.setAll(gridPane ,buttonBox)
-    }      
-
-  def _update2():Unit =
-
-    maze.resetPath() 
-
-    val (sx, sy) = (Random().nextInt(maze.width), Random().nextInt(maze.height))
-    val source = maze.grid(sx)(sy)
-    source.pred = source
-    maze.findPath(source)
-    
-    val (tx, ty) = (Random().nextInt(maze.width), Random().nextInt(maze.height))
-    val target = maze.grid(tx)(ty)
-    
-
-  
-
-      
-    
-
-    val tiles = maze_renderer.tiles
-    val solution_renderer = Solution_Renderer(tiles, mazeWidth, mazeHeight)
-    
-    
-    val pathPane = solution_renderer.makePath(target)
-  
-    
-    
-    scalafx.application.Platform.runLater {
-      stackPane.children.clear()
-      stackPane.children.setAll(gridPane, pathPane ,buttonBox) 
-    }
-    
     
    
   
@@ -100,26 +54,7 @@ object WeaveMaze extends JFXApp3 {
    
     
     
-    //render buttons for update
-    generateButton = new Button("Generate Maze") {
-      onAction = _ => _update1()
-    }
-
-    solveButton = new Button("Solve Maze") {
-      onAction = _ => _update2()
-    }
-      
-    buttonBox = new HBox {
-      children = Array(generateButton, solveButton)
-      alignment = Pos.Center
-      //style = "-fx-background-color: rgba(255, 255, 255, 0.7);"
-      prefHeight = 50
-    }
-
-    buttonBox.setTranslateY(mazeHeight/2 + 5)
-
-    //stackPane.children.add(buttonBox)
-    
+   
     //player initialization
     val (sx, sy) = (Random().nextInt(maze.width), Random().nextInt(maze.height))
     val source = maze.grid(sx)(sy)
@@ -130,23 +65,26 @@ object WeaveMaze extends JFXApp3 {
     stackPane.children.add(player.box)
     
     
-    //path initialization
+    //target initialization
     var target:Cell = null
-    def newPath():Unit = 
+    def newTarget():Unit = 
+      val (tx, ty) = (Random().nextInt(maze.width), Random().nextInt(maze.height))
+      target = maze.grid(tx)(ty)
+      solution_renderer.setTarget(target)
+
+
+    newTarget()
+
+    //path initialization
+    def showPath():Unit = 
       maze.resetPath()
       player.cell._makeSource() //make the current cell the new source
       maze.findPath(player.cell)
       
-      val (tx, ty) = (Random().nextInt(maze.width), Random().nextInt(maze.height))
-      target = maze.grid(tx)(ty)
-      
-      val tiles = maze_renderer.tiles
-      val solution_renderer = Solution_Renderer(tiles, mazeWidth, mazeHeight)
-      val pathPane = solution_renderer.makePath(target)
-      
-      solution.children.setAll(pathPane)
-    
-    newPath()
+      solution_renderer.makePath()
+     
+    def hidePath():Unit = 
+      solution_renderer.hidePath()
     
     // Set up the primary stage
     stage = new JFXApp3.PrimaryStage {
@@ -162,10 +100,19 @@ object WeaveMaze extends JFXApp3 {
             case KeyCode.Down => player.move(S)
             case KeyCode.Left => player.move(W)
             case KeyCode.Right => player.move(E)
-            case KeyCode.Space => if player.cell == target then newPath()
+            case KeyCode.Enter => if player.cell == target then newTarget()
+            case KeyCode.Space => showPath()
             case _ => println("Invalid move")
           }
         }
+        
+        onKeyReleased = (event: KeyEvent) => {
+          event.code match {
+            case KeyCode.Space => hidePath()
+            case _ => println("")
+          }
+        }
+
         scale.xProperty().bind(this.widthProperty().divide(mazeWidth))  
         //scale.yProperty().bind(scale.xProperty())
         scale.yProperty().bind(this.heightProperty().divide(mazeHeight))
@@ -205,20 +152,17 @@ object WeaveMaze extends JFXApp3 {
     
 
     
-    def _update3() = {
-      _update1()
-      _update2()
 
-    }
-      val timeline = new Timeline {
-      cycleCount = Timeline.Indefinite
-      keyFrames = Seq(
-        KeyFrame(Duration(5000000), onFinished = _ => _update2())
-      )
-    }  
-    
-    
-    timeline.play()
+
+    //val timeline = new Timeline {
+    //  cycleCount = Timeline.Indefinite
+    //  keyFrames = Seq(
+    //    KeyFrame(Duration(5000000), onFinished = _ => _update2())
+    //  )
+    //}  
+    //
+    //
+    //timeline.play()
 
 
     

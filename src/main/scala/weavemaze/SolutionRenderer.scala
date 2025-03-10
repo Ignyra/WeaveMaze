@@ -116,9 +116,40 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
 
 class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Double, mazeHeight:Double) {
   
+  val cellSize = tiles(0)(0).tileWidth
+    
 
-   
+  val lineWidth = cellSize/10
+  val circleRadius = cellSize/3
   
+  val lineColor = Color.Red 
+  val circleColor = Color.Black
+
+  val solutionPane = new Pane{}
+  
+
+  private var target:Cell = null
+  private var targetShape:Circle = null 
+
+  //resets any paths or targets, and adds the new target
+  def setTarget(t:Cell):Unit =
+    this.target = t
+    val tile = tiles(target.x)(target.y)
+    targetShape = new Circle {
+      centerX = tile.layoutX() + cellSize / 2
+      centerY = tile.layoutY() + cellSize / 2
+      radius = circleRadius
+      fill = Color.Red
+    }
+    solutionPane.children.setAll(targetShape)
+  
+  def hidePath():Unit = 
+    solutionPane.children.setAll(targetShape)
+  
+   
+
+
+
   def findDir(c1:Cell, c2:Cell) = 
     if c1.x + 1 == c2.x then 
       E
@@ -160,17 +191,9 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
   
   
   
-  def makePath(target:Cell):Pane = 
+  def makePath():Unit = 
   
-    val cellSize = tiles(0)(0).tileWidth
-    
-
-    val lineWidth = cellSize/10
-    val circleRadius = cellSize/3
-    
-    val lineColor = Color.Red 
-    val circleColor = Color.Black
-    
+        
 
     val overlayPane = new Pane {
       prefWidth = mazeWidth
@@ -221,7 +244,7 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
       i+=1
       
 
-    overlayPane
+    solutionPane.children.setAll(overlayPane)
   
 
 }
