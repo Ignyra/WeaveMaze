@@ -1,7 +1,7 @@
 package weavemaze
 
 import scalafx.scene.paint.Color
-import scalafx.scene.shape.{Rectangle, Line, Circle}
+import scalafx.scene.shape.{Rectangle, Line, Circle,StrokeLineCap}
 import scalafx.scene.layout.Pane
 import scala.collection.mutable.ArrayBuffer
 
@@ -19,6 +19,7 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
           endY = tile.layoutY() + cellSize / 2
           stroke = lineColor
           strokeWidth = lineWidth
+          strokeLineCap.value = StrokeLineCap.Butt
         }
   
   def verticalLine = new Line {
@@ -28,6 +29,7 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
           endY = tile.layoutY() + cellSize
           stroke = lineColor
           strokeWidth = lineWidth
+          strokeLineCap.value = StrokeLineCap.Butt
         }
   
 
@@ -45,6 +47,7 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
           endY = tile.layoutY() + cellSize / 2
           stroke = lineColor
           strokeWidth = lineWidth
+          strokeLineCap.value = StrokeLineCap.Butt
         }
 
   def halfHLineLeft = new Line {
@@ -54,6 +57,7 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
           endY = tile.layoutY() + cellSize / 2
           stroke = lineColor
           strokeWidth = lineWidth
+          strokeLineCap.value = StrokeLineCap.Butt
         }
   
   def halfVLineDown = new Line {
@@ -63,6 +67,7 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
           endY = tile.layoutY() + cellSize
           stroke = lineColor
           strokeWidth = lineWidth
+          strokeLineCap.value = StrokeLineCap.Butt
         }
   
   def halfVLineUp = new Line {
@@ -72,6 +77,7 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
           endY = tile.layoutY() + cellSize / 2
           stroke = lineColor
           strokeWidth = lineWidth
+          strokeLineCap.value = StrokeLineCap.Butt
         }
  
   val EW = E | W 

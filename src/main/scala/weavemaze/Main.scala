@@ -10,8 +10,10 @@ import scalafx.Includes.jfxScene2sfx
 import scalafx.scene.layout.StackPane
 import scalafx.scene.layout.Pane
 
-import scalafx.scene.shape.Circle
-import scalafx.scene.paint.Color
+
+import scalafx.embed.swing.SwingFXUtils
+import javax.imageio.ImageIO
+import java.io.File
 
 import scalafx.Includes._
 import scalafx.scene.control.Button
@@ -47,7 +49,24 @@ object WeaveMaze extends JFXApp3 {
 
     
    
-  
+  def saveScreenshot(pane: Pane, filename: String, scale:Double): Unit = {
+    
+    val tempX = pane.scaleX.value
+    val tempY = pane.scaleY.value
+
+    pane.scaleX = scale
+    pane.scaleY = scale
+
+
+    val wImage = pane.snapshot(null, null)
+    val bufferedImage = SwingFXUtils.fromFXImage(wImage, null)
+    ImageIO.write(bufferedImage, "png", new File(filename))
+    println("Screenshot saved")
+    
+    pane.scaleX = tempX
+    pane.scaleY = tempY
+
+  }
     
 
   override def start(): Unit = {
@@ -102,6 +121,7 @@ object WeaveMaze extends JFXApp3 {
             case KeyCode.Right => player.move(E)
             case KeyCode.Enter => if player.cell == target then newTarget()
             case KeyCode.Space => showPath()
+            case KeyCode.S => saveScreenshot(stackPane, "game.png", 2)
             case _ => println("Invalid move")
           }
         }
@@ -120,12 +140,9 @@ object WeaveMaze extends JFXApp3 {
         
       }
 
-
-      
-      
-
-
     }
+
+    
 
     //var fixingAspectRatio = false
     //  
