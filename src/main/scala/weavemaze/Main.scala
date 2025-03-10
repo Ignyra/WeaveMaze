@@ -123,7 +123,7 @@ object WeaveMaze extends JFXApp3 {
     //player initialization
     val (sx, sy) = (Random().nextInt(maze.width), Random().nextInt(maze.height))
     val source = maze.grid(sx)(sy)
-    source.pred = source
+    source._makeSource()
     maze.findPath(source)
 
     val player = Player("ME", source, maze_renderer.tiles, maze.grid)
@@ -134,7 +134,7 @@ object WeaveMaze extends JFXApp3 {
     var target:Cell = null
     def newPath():Unit = 
       maze.resetPath()
-      player.cell.pred = player.cell
+      player.cell._makeSource() //make the current cell the new source
       maze.findPath(player.cell)
       
       val (tx, ty) = (Random().nextInt(maze.width), Random().nextInt(maze.height))

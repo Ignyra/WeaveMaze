@@ -28,15 +28,20 @@ val OPPOSITE: Map[Int, Int] = Map(N->S, S->N, E->W, W->E)
 val DX : Map[Int, Int] = Map(N->  0, S->  0, E-> +1, W-> -1)
 val DY : Map[Int, Int] = Map(N-> -1, S-> +1, E->  0, W->  0)
 
+val DIRECTIONS = Seq(N, S, W, E)
+
 // Therfore 0 means a cell with no north, south, east, west exits and one without a tunnel under it.
 
 
 class Cell(val x: Int, val y: Int, var exit:Int = 0, var pred: Cell = null, var tunnel:Cell = null) {
   override def toString = s"$x , $y"
+  
+  def _makeSource() = 
+    this.pred = this
 
   def _resetPath() = 
     pred = null
-    tunnel = null
+    if tunnel != null then tunnel.pred = null
 }
 
 class DisjointSet(val h: Int, val w: Int) {
@@ -140,9 +145,10 @@ class Maze(val height:Int, val width: Int, val bridgeDensity:Double) {
             //choose which straight cell connects to the current cell and becomes a bridge, more randomness
             if Random().nextInt(2) == 1 then
               grid(cx)(cy).exit = B | W | E
+              grid(cx)(cy).tunnel = Cell(cx, cy, T | N | S) //it has a tunnel under it going in the opposte directions
             else
               grid(cx)(cy).exit = B | N | S
-
+              grid(cx)(cy).tunnel = Cell(cx, cy, T | W | E)
             //we should probably only do this if the concrned cell isn't a bridge, other wise, we cover what the path under it by connecting a path. 
             grid(nx)(ny).exit |= S
             grid(wx)(wy).exit |= E
@@ -180,72 +186,27 @@ class Maze(val height:Int, val width: Int, val bridgeDensity:Double) {
   def resetPath() = 
     this.grid.map(_.map(_._resetPath()))
 
-  
 
-  // treating pred = null as "unvisted" and so source.pred = source which means it is visted and it can't the pred of something else
-  def findPath(source:Cell):Unit = 
-    //connect a tile with its north exit or a bridge tile with its side tiles connecting "under" it
-    if (source.exit & N) == N then
-      var curr = source
-      var next = this.grid(source.x)(source.y-1)
-      
-      //if the next is a bridge that is perpendicular (i.e. the current cell has a path under it), then we create a tunnel cell if it doesn't already exist and skip
-      //doing Depth first search on it and go to the next one to force "skip" doing the bridge exits that aren't connected to begin with
-      if (next.exit == (B | E | W)) then
-        if next.tunnel == null then
-          next.tunnel = Cell(next.x, next.y, T | N | S, source)
-        curr = next.tunnel
-        next = this.grid(curr.x)(curr.y-1)
-
-      if next.pred == null then
-        next.pred = curr
-        findPath(next)
-
-    if (source.exit & S) == S then
-      
-      var curr = source
-      var next = this.grid(source.x)(source.y+1)
-      
-      if (next.exit == (B | E | W)) then
-        if next.tunnel == null then
-          next.tunnel = Cell(next.x ,next.y, T | N | S, source)
-        curr = next.tunnel
-        next = this.grid(curr.x)(curr.y+1)
-
-      if next.pred == null then
-        next.pred = curr    
-        findPath(next)
-
-    if (source.exit & E) == E then
-      var curr = source
-      var next = this.grid(source.x+1)(source.y)
-      
-      if (next.exit == (B | N | S)) then
-        if next.tunnel == null then 
-          next.tunnel = Cell(next.x, next.y, T | E | W, source)
-        curr = next.tunnel
-        next = this.grid(curr.x+1)(curr.y)
-
-      if next.pred == null then
-        next.pred = curr    
-        findPath(next)
-
-    if (source.exit & W) == W then
-      
-      var curr = source
-      var next = this.grid(source.x-1)(source.y)
-      
-      if (next.exit == (B | N | S)) then
+  // treating pred = null as "unvisted" and trating source.pred = source as if it is visted and it can't the pred of something else
+  def findPath(source:Cell):Unit =
+    for dir <- DIRECTIONS do 
+      //connect a tile with its exit tiles only if not visited
+      if (source.exit & dir) == dir then
+        var next = this.grid(source.x + DX(dir))(source.y + DY(dir))
         
-        if next.tunnel == null then
-          next.tunnel = Cell(next.x, next.y, T | E | W, source)
-        curr = next.tunnel
-        next = this.grid(curr.x-1)(curr.y)
+        //if the next is a bridge that is perpendicular/blocked from that direction (i.e. the current cell has a path under it), then 
+        //we point next to the tunnel with its different exits so depth first search works on it
+        //instead of the birdgeform a conection via pred 
+        if ((next.exit & B) == B) && ((next.exit & OPPOSITE(dir)) == 0) then
+          next  = next.tunnel
 
-      if next.pred == null then
-        next.pred = curr    
-        findPath(next)
+        if next.pred == null then
+          next.pred = source
+          findPath(next)
 
+      
+
+  
 
   //generate maze
   this.addBridges(bridgeDensity)
