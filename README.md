@@ -17,6 +17,7 @@ sbt run
 
 ## Controls
 
-- Arrow Keys for movement
-- Hold Space to show the path
-- If the player reached target, click Enter to create a new target
+- *Arrow Keys* for movement
+- Hold *Space* to show the path
+- If the player reached target, click *Enter* to create a new target
+- *S* to take a screenshot

@@ -14,6 +14,7 @@ import scalafx.scene.layout.Pane
 import scalafx.embed.swing.SwingFXUtils
 import javax.imageio.ImageIO
 import java.io.File
+import javafx.scene.image.WritableImage
 
 import scalafx.Includes._
 import scalafx.scene.control.Button
@@ -49,16 +50,24 @@ object WeaveMaze extends JFXApp3 {
 
     
    
-  def saveScreenshot(pane: Pane, filename: String, scale:Double): Unit = {
+  def saveScreenshot(pane: Pane, filename: String, res:Double): Unit = {
     
     val tempX = pane.scaleX.value
     val tempY = pane.scaleY.value
 
-    pane.scaleX = scale
-    pane.scaleY = scale
+    pane.scaleX = res
+    pane.scaleY = res
 
 
-    val wImage = pane.snapshot(null, null)
+    val wImage = new WritableImage(
+      pane.layoutBounds().getWidth.toInt * res.toInt,
+      pane.layoutBounds().getHeight.toInt * res.toInt
+    )
+    
+
+
+
+    pane.snapshot(null, wImage)
     val bufferedImage = SwingFXUtils.fromFXImage(wImage, null)
     ImageIO.write(bufferedImage, "png", new File(filename))
     println("Screenshot saved")
