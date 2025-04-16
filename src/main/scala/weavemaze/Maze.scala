@@ -33,7 +33,7 @@ val DIRECTIONS = Seq(N, S, W, E)
 // Therfore 0 means a cell with no north, south, east, west exits and one without a tunnel under it.
 
 
-class Cell(val x: Int, val y: Int, var exit:Int = 0, var pred: Cell = null, var tunnel:Cell = null) {
+class Cell(val x: Int, val y: Int, var exit:Int = 0, var pred: Cell = null, var tunnel:Cell = null, var dist:Int = 0) {
   override def toString = s"$x , $y"
   
   def _makeSource() = 
@@ -41,7 +41,10 @@ class Cell(val x: Int, val y: Int, var exit:Int = 0, var pred: Cell = null, var 
 
   def _resetPath() = 
     pred = null
-    if tunnel != null then tunnel.pred = null
+    dist = 0
+    if tunnel != null then 
+      tunnel.pred = null
+      tunnel.dist = 0
 }
 
 class DisjointSet(val h: Int, val w: Int) {
@@ -196,12 +199,13 @@ class Maze(val height:Int, val width: Int, val bridgeDensity:Double) {
         
         //if the next is a bridge that is perpendicular/blocked from that direction (i.e. the current cell has a path under it), then 
         //we point next to the tunnel with its different exits so depth first search works on it
-        //instead of the birdgeform a conection via pred 
+        //instead of the birdge forming a conection via pred where a path doesn't exist 
         if ((next.exit & B) == B) && ((next.exit & OPPOSITE(dir)) == 0) then
           next  = next.tunnel
 
         if next.pred == null then
           next.pred = source
+          next.dist = source.dist + 1 //store distance
           findPath(next)
 
       

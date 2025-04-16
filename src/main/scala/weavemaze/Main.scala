@@ -32,9 +32,12 @@ object WeaveMaze extends JFXApp3 {
   //initialize maze and render
   var maze = Maze(15,30,0.3)
   var maze_renderer = Maze_Renderer(maze)
-  var (gridPane, mazeWidth, mazeHeight) = maze_renderer.generateMazeGui()
+  maze_renderer.generateMazeGui()
   
   val tiles = maze_renderer.tiles
+  val mazeWidth = maze_renderer.mazeWidth
+  val mazeHeight = maze_renderer.mazeHeight
+  val gridPane = maze_renderer.mazePane
   val solution_renderer = Solution_Renderer(tiles, mazeWidth, mazeHeight)
 
 
@@ -108,7 +111,7 @@ object WeaveMaze extends JFXApp3 {
       maze.resetPath()
       player.cell._makeSource() //make the current cell the new source
       maze.findPath(player.cell)
-      
+      println(f"Distance to Source: ${target.dist}")
       solution_renderer.makePath()
      
     def hidePath():Unit = 

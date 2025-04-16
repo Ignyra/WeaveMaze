@@ -3,8 +3,8 @@ package weavemaze
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.{Rectangle, Line, Circle,StrokeLineCap}
 import scalafx.scene.layout.Pane
-import scala.collection.mutable.ArrayBuffer
 
+import scala.collection.mutable.ArrayBuffer
 
 //end: true if either end, false is inbetween
 //dir: going to N or S or E or W or going to and comeing from NE,NW, SE, SW
@@ -149,6 +149,20 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
     }
     solutionPane.children.setAll(targetShape)
   
+  def setTargets(t:ArrayBuffer[Cell]):Unit =
+    this.target = t.minBy(c => c.dist) //Showing the hint for the nearest target
+    solutionPane.children.setAll()
+    for cell <- t do {
+      val tile = tiles(cell.x)(cell.y)
+      targetShape = new Circle {
+        centerX = tile.layoutX() + cellSize / 2
+        centerY = tile.layoutY() + cellSize / 2
+        radius = circleRadius
+        fill = Color.Red
+      }
+      solutionPane.children.add(targetShape)
+    }
+    
   def hidePath():Unit = 
     solutionPane.children.setAll(targetShape)
   

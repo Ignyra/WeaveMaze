@@ -1,6 +1,6 @@
 import Dependencies._
 
-ThisBuild / scalaVersion     := "3.3.3"
+ThisBuild / scalaVersion     := "3.3.5"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
 
 lazy val osName = System.getProperty("os.name") match {
@@ -17,7 +17,7 @@ lazy val scalafxDependencies = Seq(
   .map(m => "org.openjfx" % s"javafx-$m" % "21.0.6" classifier osName)
 
 lazy val commonSettings = Seq(
-    scalaVersion := "3.3.3",
+    scalaVersion := "3.3.5",
     Test / parallelExecution := false,
 )
 

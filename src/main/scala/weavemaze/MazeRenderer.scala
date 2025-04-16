@@ -80,20 +80,34 @@ case class connectionHorizontalTile(override val tileHeight:Double, override val
 case class connectionVerticalTile(override val tileHeight:Double, override val tileWidth:Double, edgeThickness:Double, tileColor:Color, edgeColor:Color) extends cellTile(S | N, tileHeight, tileWidth, edgeThickness, tileColor, edgeColor) 
 
 
-class Maze_Renderer(maze:Maze) {
+class Maze_Renderer(maze:Maze, cellSize:Double = 15.0) {
   
 
   val cols = maze.width
   val rows = maze.height
+  val mazePane = new Pane {}
+  
+  private var mainGridPane:Pane = null
+  
+  val spacingSize = cellSize/2.0
 
+  val mazeWidth = cols * (cellSize + spacingSize) - spacingSize 
+  val mazeHeight = rows * (cellSize + spacingSize) - spacingSize
+  
   val tiles: ArrayBuffer[ArrayBuffer[cellTile]]= ArrayBuffer.fill(cols, rows)(null)
+  
+  def showMaze():Unit = 
+    require(mainGridPane != null)
+    this.mazePane.children.setAll(mainGridPane)
+  
+  def hideMaze():Unit = 
+    this.mazePane.children.setAll()
 
-  def generateMazeGui(cellSize:Double = 15.0):(Pane, Double, Double) = 
+  
+  def generateMazeGui():Unit = 
     
-    val spacingSize = cellSize/2.0 
+     
 
-    val mazeWidth = cols * (cellSize + spacingSize) - spacingSize 
-    val mazeHeight = rows * (cellSize + spacingSize) - spacingSize
   
     val edgeThickness = cellSize/7.0
     val tileColor = Color.White
@@ -172,6 +186,7 @@ class Maze_Renderer(maze:Maze) {
        //   println("v tile")
        //
   
-    (gridPane, mazeWidth, mazeHeight)
+    this.mainGridPane = gridPane
+    this.mazePane.children.setAll(mainGridPane)
 
 } 

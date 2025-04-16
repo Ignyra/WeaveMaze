@@ -3,3 +3,8 @@ target/
 /.idea/
 project/target/
 project/project/
+.bloop/
+.metals/
+.scalafmt.conf
+project/.bloop/
+project/metals.sbt
