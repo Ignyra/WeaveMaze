@@ -64,9 +64,10 @@ class Player(val name:String, var cell:Cell, tiles:ArrayBuffer[ArrayBuffer[cellT
   
   val cellSize = tiles(0)(0).tileWidth
   val boxSize = cellSize/2
-  val box = playerBox(boxSize, Color.Black)
+  //val box = playerBox(boxSize, Color.Black)
+  val box = playerBox(boxSize, Color.web(PlayerColor, 1.0))
   
-
+  var numMoves = 0
   
   def updatePos() = {
     val currTile = tiles(cell.x)(cell.y)
@@ -108,7 +109,13 @@ class Player(val name:String, var cell:Cell, tiles:ArrayBuffer[ArrayBuffer[cellT
     box.requestLayout() //refresh  
 
   }
-
+  
+  def getAndResetMoves:Int = {
+    val m = numMoves
+    numMoves = 0
+    m
+  }
+    
   
   def move(dir:Int) = {
     
@@ -121,7 +128,10 @@ class Player(val name:String, var cell:Cell, tiles:ArrayBuffer[ArrayBuffer[cellT
       //then alert the program by changing the cell type into a tunnel
       if ((newCell.exit & B) == B) && ((newCell.exit & OPPOSITE(dir)) == 0) then
         newCell = newCell.tunnel
-    
+      
+      //update number of Moves taken
+      numMoves += 1
+      
     cell = newCell
 
     scalafx.application.Platform.runLater {

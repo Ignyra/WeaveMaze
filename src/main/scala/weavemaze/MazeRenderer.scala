@@ -1,5 +1,7 @@
 package weavemaze
 
+import scalafx.scene.effect.{Glow, DropShadow, Blend, GaussianBlur, BlendMode}
+import scalafx.scene.paint.{Color, LinearGradient, Stop, CycleMethod}
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 import scalafx.scene.layout.Pane
@@ -14,6 +16,10 @@ import scala.collection.mutable.ArrayBuffer
 
 
 class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeThickness:Double, tileColor:Color, edgeColor: Color, var predV:cellTile = null, var predH:cellTile = null) extends Pane {
+  
+  
+
+
   val tile = new Rectangle {
     width = tileWidth
     height = tileHeight
@@ -28,7 +34,6 @@ class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeTh
     stroke = Color.Transparent
     layoutY = 0
     strokeWidth = 0
-
   }
   val LeftEdge = new Rectangle {
     width = edgeThickness
@@ -53,6 +58,7 @@ class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeTh
     fill = edgeColor
     stroke = Color.Transparent
     layoutX = tileWidth - edgeThickness
+    strokeWidth = 0
   }
 
   
@@ -110,10 +116,10 @@ class Maze_Renderer(maze:Maze, cellSize:Double = 15.0) {
 
   
     val edgeThickness = cellSize/7.0
-    val tileColor = Color.White
-    val edgeColor = Color.Black
-    val backgroundColor = Color.AntiqueWhite
-     
+    val tileColor = Color.web(MazeTileColor, 1.0)
+    val edgeColor = Color.web(MazeEdgeColor, 1.0)
+    val backgroundColor = Color.web(BackgroundColor, 1.0)
+    
     val gridPane = new Pane {
       prefWidth = mazeWidth
       prefHeight = mazeHeight

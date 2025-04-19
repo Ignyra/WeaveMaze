@@ -80,41 +80,23 @@ class routeGuide(dir:Int , tile:Pane, cellSize: Double, lineWidth:Double, circle
           strokeLineCap.value = StrokeLineCap.Butt
         }
  
-  val EW = E | W 
-  val NS = N | S
   dir match {
     case N => {
       children.add(halfVLineUp)
-      if end then 
-        children.add(Dot)
     }
 
     case S => {
       children.add(halfVLineDown)
-      if end then 
-        children.add(Dot)
     }
     case E => {
       children.add(halfHLineRight)
-      if end then 
-        children.add(Dot)
     }
-
     case W => {
       children.add(halfHLineLeft)
-      if end then 
-        children.add(Dot)
     }
-    //vertical connection
-    case NS => {
-      children.add(verticalLine)
-    }
-    //horitontal connection
-    case EW => {
-      children.add(horizontalLine)
-    }
-    //   
   }
+  //if end then children.add(Dot)
+
 
 }
 
@@ -138,20 +120,19 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
   private var targetShape:Circle = null 
 
   //resets any paths or targets, and adds the new target
-  def setTarget(t:Cell):Unit =
-    this.target = t
-    val tile = tiles(target.x)(target.y)
-    targetShape = new Circle {
-      centerX = tile.layoutX() + cellSize / 2
-      centerY = tile.layoutY() + cellSize / 2
-      radius = circleRadius
-      fill = Color.Red
-    }
-    solutionPane.children.setAll(targetShape)
+  //def setTarget(t:Cell):Unit =
+  //  this.target = t
+  //  val tile = tiles(target.x)(target.y)
+  //  targetShape = new Circle {
+  //    centerX = tile.layoutX() + cellSize / 2
+  //    centerY = tile.layoutY() + cellSize / 2
+  //    radius = circleRadius
+  //    fill = Color.Red
+  //  }
+  //  solutionPane.children.setAll(targetShape)
   
   def setTargets(t:ArrayBuffer[Cell]):Unit =
     this.target = t.minBy(c => c.dist) //Showing the hint for the nearest target
-    solutionPane.children.setAll()
     for cell <- t do {
       val tile = tiles(cell.x)(cell.y)
       targetShape = new Circle {
@@ -163,8 +144,8 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
       solutionPane.children.add(targetShape)
     }
     
-  def hidePath():Unit = 
-    solutionPane.children.setAll(targetShape)
+  def resetPathAndTargets():Unit = 
+    solutionPane.children.setAll()
   
    
 
@@ -265,6 +246,7 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
       
 
     solutionPane.children.setAll(overlayPane)
+    //solutionPane.children.add(targetShape)
   
 
 }
