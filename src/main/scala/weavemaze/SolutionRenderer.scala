@@ -3,6 +3,8 @@ package weavemaze
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.{Rectangle, Line, Circle,StrokeLineCap}
 import scalafx.scene.layout.Pane
+import scalafx.scene.shape.StrokeType.Inside
+import scalafx.scene.effect.Glow
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -108,28 +110,16 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
     
 
   val lineWidth = cellSize/10
-  val circleRadius = cellSize/3
+  val circleRadius = cellSize/3.5
   
   val lineColor = Color.Red 
   val circleColor = Color.Black
 
   val solutionPane = new Pane{}
-  
 
   private var target:Cell = null
   private var targetShape:Circle = null 
 
-  //resets any paths or targets, and adds the new target
-  //def setTarget(t:Cell):Unit =
-  //  this.target = t
-  //  val tile = tiles(target.x)(target.y)
-  //  targetShape = new Circle {
-  //    centerX = tile.layoutX() + cellSize / 2
-  //    centerY = tile.layoutY() + cellSize / 2
-  //    radius = circleRadius
-  //    fill = Color.Red
-  //  }
-  //  solutionPane.children.setAll(targetShape)
   
   def setTargets(t:ArrayBuffer[Cell]):Unit =
     this.target = t.minBy(c => c.dist) //Showing the hint for the nearest target
@@ -139,7 +129,10 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
         centerX = tile.layoutX() + cellSize / 2
         centerY = tile.layoutY() + cellSize / 2
         radius = circleRadius
-        fill = Color.Red
+        fill = Color.web(TargetColor, TargetColorOP)
+        strokeWidth = circleRadius/3
+        strokeType = Inside
+        stroke = Color.web(TargetEdgeColor, TargetEdgeColorOP)
       }
       solutionPane.children.add(targetShape)
     }

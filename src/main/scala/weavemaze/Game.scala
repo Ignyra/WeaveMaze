@@ -20,14 +20,23 @@ import scalafx.application.Platform
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
 
+import scalafx.scene.layout.{Background, BackgroundFill, CornerRadii}
+import scalafx.geometry.Insets
 import scalafx.scene.text.{Text, Font}
 import scalafx.geometry.Pos
+import scalafx.scene.shape.StrokeType.Inside
+import scalafx.scene.effect.Glow
 
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.HashMap
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+
+
 
 class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infinite:Boolean = false, val userRows:Int = 0, val userCols:Int = 0) { 
 
@@ -40,14 +49,14 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
   protected val minBridgeDensity: Double = 0.1
   protected val hintsFactor = 3
   protected val timeFactor = 1000
-  
+
   //The Easy Settings
   protected var rows: Int = minRows
   protected var cols: Int = minCols
   protected var bridgeDensity: Double = minBridgeDensity
   protected var initTimeMS:Int = (rows*cols*bridgeDensity*timeFactor).toInt //125 secs
 
-  
+
   //Maze variables
   protected var maze:Maze = null
   protected var maze_renderer:Maze_Renderer = null
@@ -58,6 +67,7 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
   protected val targetsDist = HashMap[Cell, Int]()
   protected var remainingHints:Int = numTargets * hintsFactor
   protected var hintShown = false
+  protected var MazeName:String = null
   
   //Full Game Pane Init
   protected val GamePane = new Pane{}
@@ -73,44 +83,50 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
   protected var Start = false
 
   def applyDifficulty():Unit = {
-    //Difficulty is treated as a reserve, it is applied to each of the main 4 variables until it is emptied. The division is random
-    val range = 0.4
-    val start = 0.3
 
-    var remainingDiff = difficulty
-    var currDiff = remainingDiff
-    if userRows <= minRows || userCols <=minCols  then  
-      currDiff = (range * Random().nextDouble() + start) * remainingDiff
-      cols = (minCols + currDiff * MaxCols).toInt
-      remainingDiff -= currDiff
-
-      currDiff = (range * Random().nextDouble() + start) * remainingDiff
-      rows = (minRows+ currDiff * MaxRows).toInt
-      remainingDiff -= currDiff
-
+    var timeDifficulty = difficulty
+    if userRows < minRows || userCols < minCols  then  
+      cols = (minCols + difficulty * MaxCols).toInt
+      rows = (minRows + difficulty * MaxRows).toInt
     else
       rows = userRows
       cols = userCols
+      val difficultyDiff = difficulty - ((userRows - minRows)/MaxRows + (userCols - minCols)/MaxCols)/2 // requested difficulty - approximated difficulty
+      timeDifficulty += difficultyDiff
 
-    currDiff = (range * Random().nextDouble() + start) * remainingDiff
-    bridgeDensity = minBridgeDensity + currDiff * MaxBridges
-    remainingDiff -= currDiff
-   
-    //The remaining difficulty acts as a reduction factor to the usual allocated time
-    initTimeMS = ((rows*cols*bridgeDensity*timeFactor) * (1 - remainingDiff)).toInt
+    if MazeName == null then 
+      bridgeDensity = minBridgeDensity + difficulty * MaxBridges
+    else
+      //loaded maze, no setting rows,cols,bridgeDensity
+      timeDifficulty = difficulty
+      val difficultyDiff = difficulty - ((userRows - minRows)/MaxRows + (userCols - minCols)/MaxCols + (bridgeDensity - minBridgeDensity)/MaxBridges)/3 
+      timeDifficulty += difficultyDiff
+
+    initTimeMS = ((rows*cols*bridgeDensity*timeFactor) * (1 - timeDifficulty)).toInt
   }
   
-
+  //should be called before start() if you want to load an old maze
+  def setAndLoadMaze(filename:String):Unit = {
+    this.maze = Maze(0,0,0)
+    this.maze.loadMaze(filename)
+    this.MazeName = filename
+    this.rows = this.maze.height
+    this.cols = this.maze.width
+    this.bridgeDensity = this.maze.bridgeDensity
+  }
 
 
   def initMaze():Unit = {
-    this.maze = Maze(rows, cols, bridgeDensity) 
+    if MazeName == null then //New Maze else use the loaded maze
+      this.maze = Maze(rows, cols, bridgeDensity)
+      this.maze.makeNewMaze()
     this.maze_renderer = Maze_Renderer(maze)
     this.maze_renderer.generateMazeGui()
     this.solution_renderer = Solution_Renderer(maze_renderer.tiles, maze_renderer.mazeWidth, maze_renderer.mazeHeight)
     this.GamePane.children = Seq(maze_renderer.mazePane, solution_renderer.solutionPane)
     this.scorePane = ScoreBar(initTimeMS, numTargets, remainingHints, infinite, maze_renderer.mazeWidth, maze_renderer.mazeHeight, maze_renderer.mazeHeight * 0.12)
     FullPane.children += scorePane
+    GamePane.effect = Glow(GlowLevel)
   }
 
   def initPlayers():Unit = {
@@ -225,6 +241,15 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
     pane.scaleY = tempY
 
   }
+
+  def saveScore(filePath: String = "scoreboard.txt"): Unit = {
+    val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+    val line = s"${timestamp}, ${name}, score=${this.scorePane.getScore}, diff=${difficulty}"
+    val file = new java.io.PrintWriter(new java.io.FileOutputStream(filePath, true))
+    file.println(line)
+    file.close()
+  }
+
   def attach(scene:Scene):Unit = {
     //controls
     scene.addEventHandler(KeyEvent.KeyPressed, (e:KeyEvent) => {
@@ -237,7 +262,10 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
           case KeyCode.Enter => checkPlayerAtTarget()
           case KeyCode.Space => showHint()
           case KeyCode.R => if infinite then this.scorePane.pause() //then trigger Done Scene with WON and show the full run score
-          case KeyCode.S => saveScreenshot(FullPane, "game.png", 2)
+          case KeyCode.S => 
+            saveScreenshot(FullPane, "game.png", 2)
+            this.maze.saveMaze("Maze") //testing
+            this.saveScore() //testing
           case _ => null
         }
 
@@ -266,12 +294,12 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
     this.initMaze()
     this.initPlayers()
     this.initTargets()
-    
     val w = maze_renderer.mazeWidth
     val h = maze_renderer.mazeHeight + scorePane.barHeight
     
     val scene = new Scene(w, h) { //replace with Menu's Scene current width and height so transition looks smoother
       root = FullPane
+      fill = Color.web(BackgroundColor, BackgroundColorOP)
     }
     this.attach(scene)
     scale.xProperty().bind(scene.widthProperty().divide(w))  
@@ -299,30 +327,33 @@ class ScoreBar(private var remainingTimeMS:Int,val numTargets:Int, val nHints:In
   private val bar = new Rectangle {
     width = mazeWidth
     height = barHeight
-    fill = Color.BlanchedAlmond
-    stroke = Color.Crimson
-    strokeWidth = 3
+    fill = Color.web(InfoBarColor, InfoBarColorOP)
+    stroke = Color.web(InfoBarEdgeColor, InfoBarEdgeColorOP)
+    strokeWidth = barHeight/30
+    strokeType = Inside
   }
 
-  private val textfont = Font("Consolas", barHeight/5)
+  private val textfont = Font.loadFont(this.getClass.getResourceAsStream(FontType), barHeight/4.5)
+  private val textColor = Color.web(InfoTextColor, InfoTextColorOP)
+  private val spacingEdges = "    "
   private val timerText = new Text(formattedTime(0)) {
-    fill = Color.Black
+    fill = textColor
     font = textfont
   }
-  private val scoreText = new Text(f"Score: $score") {
-    fill = Color.Black
+  private val scoreText = new Text(f"\udb85\udf42 Score: $score") {
+    fill = textColor
     font = textfont
   }
-  private val movesText = new Text(f"Moves Left: $remainingMoves") {
-    fill = Color.Black
+  private val movesText = new Text(f"\uF013 Moves Left: $remainingMoves") {
+    fill = textColor
     font = textfont
   }
-  private val hintsText = new Text(f" Hints Left: $remainingHints") {
-    fill = Color.Black
+  private val hintsText = new Text(spacingEdges + f"\uf400 Hints Left: $remainingHints") {    
+    fill = textColor
     font = textfont
   }
-  private val targetsText = new Text(f"Targets Left: $remainingTargets") {
-    fill = Color.Black
+  private val targetsText = new Text(f"\udb81\udcfe Targets Left: $remainingTargets") {
+    fill = textColor
     font = textfont
   }
 
@@ -330,7 +361,7 @@ class ScoreBar(private var remainingTimeMS:Int,val numTargets:Int, val nHints:In
     val minutes = ms / 60000
     val seconds = (ms % 60000) / 1000
     val hundredths = (ms % 1000) / 10
-    f"Time: $minutes%02d:$seconds%02d.$hundredths%02d "
+    f"\udb81\udd1b Time: $minutes%02d:$seconds%02d.$hundredths%02d" + spacingEdges
   }
 
   val hbox = new HBox {
@@ -364,10 +395,11 @@ class ScoreBar(private var remainingTimeMS:Int,val numTargets:Int, val nHints:In
         initTime += updateInterval
         Platform.runLater {
           timerText.text = formattedTime(remainingTimeMS)
-          scoreText.text = f"Score: $score"
-          movesText.text = f"Moves Left: $remainingMoves"
-          hintsText.text = f" Hints Left: $remainingHints"
-          targetsText.text = f"Targets Left: $remainingTargets"
+          scoreText.text = f"\udb85\udf42 Score: $score"
+          movesText.text = f"\uF013 MovesLeft: $remainingMoves"
+          targetsText.text = f"\udb81\udcfe Targets Left: $remainingTargets"
+          if cooldownTime > 0 then {hintsText.text =spacingEdges + f"\uf400 Hints Left: $remainingHints (\udb82\udd7f $cooldownTime)"}
+          else {hintsText.text = spacingEdges + f"\uf400 Hints Left: $remainingHints"}
         }
         if isOver then {
           running = false
@@ -375,7 +407,9 @@ class ScoreBar(private var remainingTimeMS:Int,val numTargets:Int, val nHints:In
         }
       }
     }
-  } 
+  }
+
+
   
   def isRunning = running
   def pause():Unit = {running = false}
@@ -403,6 +437,7 @@ class ScoreBar(private var remainingTimeMS:Int,val numTargets:Int, val nHints:In
   
   def setRemainingTargets(n:Int) = {remainingTargets = n}
   
+  this.effect = Glow(GlowLevel)
   this.children = Seq(bar, hbox)
 }
 

@@ -8,3 +8,4 @@ project/project/
 .scalafmt.conf
 project/.bloop/
 project/metals.sbt
+src/main/resources/fonts/others/

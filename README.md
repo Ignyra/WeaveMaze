@@ -17,7 +17,7 @@ sbt run
 
 ---
 ## Controls
-
+- Press any key to start
 - *Arrow Keys* for movement
 - Hold *Space* to show a hint
 - If the player reached target, click *Enter* to collect the target
@@ -34,7 +34,7 @@ Difficulty is a fractional value between 0 and 1 that influences:
 - **Target bonuses**: Reduced time per target at higher difficulty.
 - **Moves**: Players are given fewer bonus moves per target when difficulty increases.
 
-Difficulty is distributed across these parameters randomly.
+Difficulty is applied equally to the first three parmeters, unless the first 2 are set by the user. In that case, we increase the difficulty factor for the the third parmeter.
 
 ### Scoring System
 Scoring rewards the player for:

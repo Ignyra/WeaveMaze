@@ -9,9 +9,12 @@ import scala.collection.mutable.ArrayBuffer
 //https://github.com/daleobrien/maze/blob/master/maze/maze.py
 //https://www.geeksforgeeks.org/kruskals-minimum-spanning-tree-algorithm-greedy-algo-2/
 //https://weblog.jamisbuck.org/2011/1/3/maze-generation-kruskal-s-algorithm
-//
+//https://docs.oracle.com/javase/8/docs/api/java/io/DataOutputStream.html
 
-
+import java.io.FileOutputStream
+import java.io.DataOutputStream
+import java.io.FileInputStream
+import java.io.DataInputStream
 
 //Using bit representaions for efficincy
 import java.lang.Integer
@@ -100,23 +103,22 @@ class DisjointSet(val h: Int, val w: Int) {
 
 
 
-class Maze(val height:Int, val width: Int, val bridgeDensity:Double) {
+class Maze(var height:Int, var width: Int, var bridgeDensity:Double) {
   
-  val dset = DisjointSet(height, width)
-  //val grid = dset.parents.map(_.map(_.copy()))
-  val grid = dset.parents.map(_.clone()) 
-
-
+  var dset:DisjointSet = null
+  var grid:ArrayBuffer[ArrayBuffer[Cell]] = null
   var edges:ArrayBuffer[(Cell, Cell)] = ArrayBuffer()
 
-  for x <- 0 until width do 
-    for y <- 0 until height do 
-      if x < width - 1 then edges += ((grid(x)(y), grid(x+1)(y))) //every horizontal edge except grid(width-1)(:) since it is the last column
+  def initEdgesAndCells():Unit =
+    dset = DisjointSet(height, width)
+    this.grid = dset.parents.map(_.clone()) 
+    for x <- 0 until width do 
+      for y <- 0 until height do 
+        if x < width - 1 then edges += ((grid(x)(y), grid(x+1)(y))) //every horizontal edge except grid(width-1)(:) since it is the last column
 
-      if y < height-1 then edges += ((grid(x)(y), grid(x)(y+1))) //every vertical edge except grid(:)(height-1) since it is the last row
-  
-  edges = Random.shuffle(edges) // for a different maze
-  
+        if y < height-1 then edges += ((grid(x)(y), grid(x)(y+1))) //every vertical edge except grid(:)(height-1) since it is the last row
+    edges = Random.shuffle(edges) // for a different maze
+ 
  
 
   def addBridges(density:Double): Unit = 
@@ -208,14 +210,49 @@ class Maze(val height:Int, val width: Int, val bridgeDensity:Double) {
           next.dist = source.dist + 1 //store distance
           findPath(next)
 
-      
+  def makeNewMaze():Unit = {
+    this.initEdgesAndCells()
+    this.addBridges(bridgeDensity)
+    this.kruskal(this.edges)
+  }
 
-  
+  def saveMaze(name:String):Unit = {
+    val file = new DataOutputStream(new FileOutputStream(name + ".bin"))
+    //2 bytes for dimension, maximum width and height is 2^16
+    file.writeShort(this.height) //rows
+    file.writeShort(this.width) //cols
 
-  //generate maze
-  this.addBridges(bridgeDensity)
-  //make the desiered source, the first so every other cell will be connected to it
+    for (col <- grid; cell <- col) {
+      file.writeByte(cell.exit)
+    }
+    file.close()
+  }
 
-  this.kruskal(edges)
+  def loadMaze(name:String):Unit = {
+    val file = new DataInputStream(new FileInputStream(name + ".bin"))
+    this.height = file.readUnsignedShort()
+    this.width = file.readUnsignedShort()
+
+    this.grid = ArrayBuffer.fill[Cell](this.width, this.height)(null)
+
+    var bridgesCount = this.width * this.height
+    for (x <- 0 until width; y <- 0 until height) {
+      val e = file.readByte()
+      this.grid(x)(y) = Cell(x, y, e)
+      if (e == (B | W | E)) then {    
+        this.grid(x)(y).tunnel = Cell(x,y, T | N | S )
+      } else if (e == (B | N | S)) then {    
+        this.grid(x)(y).tunnel = Cell(x,y, T | W | E )
+      } else {
+        bridgesCount -=1
+      }
+    }
+
+    this.bridgeDensity = bridgesCount/(this.width * this.height)
+
+    assert(grid.forall(_!=null), "Corrupted File, Missing Info")
+    file.close()
+    
+  }
 
 }

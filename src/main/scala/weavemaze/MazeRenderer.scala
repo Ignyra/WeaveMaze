@@ -116,19 +116,15 @@ class Maze_Renderer(maze:Maze, cellSize:Double = 15.0) {
 
   
     val edgeThickness = cellSize/7.0
-    val tileColor = Color.web(MazeTileColor, 1.0)
-    val edgeColor = Color.web(MazeEdgeColor, 1.0)
-    val backgroundColor = Color.web(BackgroundColor, 1.0)
+    val tileColor = Color.web(MazeTileColor, MazeTileColorOP)
+    val edgeColor = Color.web(MazeEdgeColor, MazeEdgeColorOP)
+    val backgroundColor = Color.web(BackgroundColor, BackgroundColorOP)
     
     val gridPane = new Pane {
       prefWidth = mazeWidth
       prefHeight = mazeHeight
-      //style = s"-fx-background-color: ${backgroundColor.toString.drop(2).take(6)};"
     }
     
-    gridPane.background = new Background(Array(
-      new BackgroundFill(backgroundColor, CornerRadii.Empty, Insets.Empty)
-    ))
   
       
     

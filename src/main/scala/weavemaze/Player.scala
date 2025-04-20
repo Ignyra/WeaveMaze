@@ -13,18 +13,21 @@ import scalafx.animation.RotateTransition
 import scalafx.util.Duration
 import scalafx.animation.Interpolator
 import scalafx.animation.TranslateTransition
+import scalafx.scene.shape.StrokeType.Inside
+import scalafx.scene.effect.Glow
 
 
 import scala.collection.mutable.ArrayBuffer
 
 
-class playerBox(size:Double, color:Color) extends Pane {
+class playerBox(size:Double, color:Color, edgeColor:Color) extends Pane {
   val box = new Rectangle {
     width = size
     height = size
     fill = color
-    stroke = Color.Transparent
-    strokeWidth = 0
+    stroke = edgeColor
+    strokeWidth = size/3.5 
+    strokeType = Inside
   }
 
   val rotation = new RotateTransition(Duration(250), this) {
@@ -65,7 +68,7 @@ class Player(val name:String, var cell:Cell, tiles:ArrayBuffer[ArrayBuffer[cellT
   val cellSize = tiles(0)(0).tileWidth
   val boxSize = cellSize/2
   //val box = playerBox(boxSize, Color.Black)
-  val box = playerBox(boxSize, Color.web(PlayerColor, 1.0))
+  val box = playerBox(boxSize, Color.web(PlayerColor, PlayerColorOP), Color.web(PlayerEdgeColor, PlayerEdgeColorOP))
   
   var numMoves = 0
   
