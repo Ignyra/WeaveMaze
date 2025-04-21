@@ -299,7 +299,7 @@ object Done extends Scene (StandardWidth, StandardHeight){
     WeaveMaze.stage.scene = Menu.gameScene
   }
 
-  val slidersSpacing = 10
+  val slidersSpacing = 30
   val sliderHspacing = 140
 
   val finalbox = sceneVbox(slidersSpacing)
@@ -443,6 +443,7 @@ object ScoreBoard extends Scene (StandardWidth, StandardHeight){
   content = finalbox
   scale.xProperty().bind(this.widthProperty().divide(StandardWidth))
   scale.yProperty().bind(this.heightProperty().divide(StandardHeight))
+  this.reload()
 }
 
 

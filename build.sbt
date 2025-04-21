@@ -38,7 +38,7 @@ lazy val root = (project in file("."))
           (osName == "mac" && path.endsWith("-mac.jar"))
         }
         .mkString(System.getProperty("path.separator")),
-      "--add-modules", "javafx.controls,javafx.fxml"
+      "--add-modules", "javafx.controls,javafx.fxml,javafx.media"
     ),
     fork := true
   )
