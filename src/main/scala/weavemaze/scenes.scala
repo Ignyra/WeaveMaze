@@ -28,7 +28,6 @@ import scalafx.collections.ObservableBuffer
 
 val StandardWidth = 800
 val StandardHeight = 600
-//var sharedColor = ObjectProperty[Color](Color.Black) //scale ObjectProperty bindings don't work with Color, jave SimpleObjectProperty does work
 
 object Menu extends Scene (StandardWidth, StandardHeight){
   fill <== UIColors.BackgroundColor
@@ -231,7 +230,7 @@ object Done extends Scene (StandardWidth, StandardHeight){
   }
 
   val screenshotField = TextField()
-  screenshotField.promptText = "Enter File Name: Maze.png"
+  screenshotField.promptText = "Maze1.png"
   val mazeField = TextField()
   mazeField.promptText = "Enter Maze Name..."
   val saveMazeText = StringProperty("Save Maze")

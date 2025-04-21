@@ -173,20 +173,6 @@ class Maze_Renderer(maze:Maze, cellSize:Double = 15.0) {
           gridPane.children.add(connectionTile)
       
   
-       // works but sometimes adds to the front and covers some edges because to goes backwards after main tiles have been put
-       // if ((cell.exit & W) == W) then
-       //   val connectionTile = connectionHorizontalTile(cellSize, spacingSize + 2*edgeThickness, edgeThickness, tileColor,edgeColor)
-       //   connectionTile.layoutX = tile.layoutX.value - spacingSize - edgeThickness
-       //   connectionTile.layoutY = tile.layoutY.value
-       //   gridPane.children.add(connectionTile)
-       //   println("h tile")
-       // if ((cell.exit & N) == N) then
-       //   val connectionTile = connectionVerticalTile(spacingSize + 2*edgeThickness, cellSize, edgeThickness, tileColor,edgeColor)
-       //   connectionTile.layoutX = tile.layoutX.value
-       //   connectionTile.layoutY = tile.layoutY.value - spacingSize -edgeThickness
-       //   gridPane.children.add(connectionTile)
-       //   println("v tile")
-       //
   
     this.mainGridPane = gridPane
     this.mazePane.children.setAll(mainGridPane)
