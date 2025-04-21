@@ -52,3 +52,5 @@ Scoring rewards the player for:
 ### Hints
 Players start with a limited number of hints (based on number of targets and a `hintsFactor`). Using a hint temporarily shows the solution path and hides the maze then imposes cooldowns and reduces remaining hints.
 
+![](game.png)
+

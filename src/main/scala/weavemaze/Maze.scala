@@ -3,6 +3,7 @@ package weavemaze
 
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
+import java.io.File
 
 //refs:
 //https://weblog.jamisbuck.org/2011/3/17/maze-generation-more-weave-mazes.html
@@ -217,7 +218,9 @@ class Maze(var height:Int, var width: Int, var bridgeDensity:Double) {
   }
 
   def saveMaze(name:String):Unit = {
-    val file = new DataOutputStream(new FileOutputStream(name + ".bin"))
+    val f = new File(name + ".bin")
+    f.getParentFile.mkdirs()
+    val file = new DataOutputStream(new FileOutputStream(f))
     //2 bytes for dimension, maximum width and height is 2^16
     file.writeShort(this.height) //rows
     file.writeShort(this.width) //cols

@@ -10,6 +10,7 @@ lazy val osName = System.getProperty("os.name") match {
     case _ => throw new Exception("Unknown platform!")
   }
 
+scalacOptions += "-deprecation"
 
 lazy val scalafxDependencies = Seq(
   "org.scalafx" % "scalafx_3" % "20.0.0-R31"

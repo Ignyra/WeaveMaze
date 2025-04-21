@@ -129,10 +129,10 @@ class Solution_Renderer(tiles: ArrayBuffer[ArrayBuffer[cellTile]] , mazeWidth:Do
         centerX = tile.layoutX() + cellSize / 2
         centerY = tile.layoutY() + cellSize / 2
         radius = circleRadius
-        fill = Color.web(TargetColor, TargetColorOP)
+        fill <== UIColors.TargetColor
         strokeWidth = circleRadius/3
         strokeType = Inside
-        stroke = Color.web(TargetEdgeColor, TargetEdgeColorOP)
+        stroke <== UIColors.TargetEdgeColor
       }
       solutionPane.children.add(targetShape)
     }

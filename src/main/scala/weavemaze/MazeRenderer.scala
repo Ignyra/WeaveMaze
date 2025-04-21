@@ -13,24 +13,25 @@ import scalafx.scene.layout.BackgroundImage
 
 import scala.collection.mutable.ArrayBuffer
 
+import scalafx.Includes._
+import javafx.beans.property.SimpleObjectProperty
+import javafx.scene.paint.Paint
 
-
-class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeThickness:Double, tileColor:Color, edgeColor: Color, var predV:cellTile = null, var predH:cellTile = null) extends Pane {
+class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeThickness:Double, tileColor:SimpleObjectProperty[Paint], edgeColor: SimpleObjectProperty[Paint], var predV:cellTile = null, var predH:cellTile = null) extends Pane {
   
   
-
 
   val tile = new Rectangle {
     width = tileWidth
     height = tileHeight
-    fill = tileColor
+    fill <== tileColor
     stroke = Color.Transparent
     strokeWidth = 0
   }
   val TopEdge = new Rectangle {
     width = tileWidth
     height = edgeThickness
-    fill = edgeColor
+    fill <== edgeColor
     stroke = Color.Transparent
     layoutY = 0
     strokeWidth = 0
@@ -38,7 +39,7 @@ class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeTh
   val LeftEdge = new Rectangle {
     width = edgeThickness
     height = tileHeight
-    fill = edgeColor
+    fill <== edgeColor
     stroke = Color.Transparent
     layoutX = 0
     strokeWidth = 0
@@ -47,7 +48,7 @@ class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeTh
   val BottomEdge = new Rectangle {
     width = tileWidth
     height = edgeThickness
-    fill = edgeColor
+    fill <== edgeColor
     stroke = Color.Transparent
     layoutY = tileHeight - edgeThickness
     strokeWidth = 0
@@ -55,7 +56,7 @@ class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeTh
   val RightEdge = new Rectangle {
     width = edgeThickness
     height = tileHeight
-    fill = edgeColor
+    fill <== edgeColor
     stroke = Color.Transparent
     layoutX = tileWidth - edgeThickness
     strokeWidth = 0
@@ -80,10 +81,10 @@ class cellTile(val exit:Int, val tileHeight:Double, val tileWidth:Double, edgeTh
 
 }
 
-case class connectionHorizontalTile(override val tileHeight:Double, override val tileWidth:Double, edgeThickness:Double, tileColor:Color, edgeColor:Color) extends cellTile(E | W, tileHeight, tileWidth, edgeThickness, tileColor, edgeColor) 
+case class connectionHorizontalTile(override val tileHeight:Double, override val tileWidth:Double, edgeThickness:Double, tileColor:SimpleObjectProperty[Paint], edgeColor:SimpleObjectProperty[Paint]) extends cellTile(E | W, tileHeight, tileWidth, edgeThickness, tileColor, edgeColor) 
 
 
-case class connectionVerticalTile(override val tileHeight:Double, override val tileWidth:Double, edgeThickness:Double, tileColor:Color, edgeColor:Color) extends cellTile(S | N, tileHeight, tileWidth, edgeThickness, tileColor, edgeColor) 
+case class connectionVerticalTile(override val tileHeight:Double, override val tileWidth:Double, edgeThickness:Double, tileColor:SimpleObjectProperty[Paint], edgeColor:SimpleObjectProperty[Paint]) extends cellTile(S | N, tileHeight, tileWidth, edgeThickness, tileColor, edgeColor) 
 
 
 class Maze_Renderer(maze:Maze, cellSize:Double = 15.0) {
@@ -116,9 +117,8 @@ class Maze_Renderer(maze:Maze, cellSize:Double = 15.0) {
 
   
     val edgeThickness = cellSize/7.0
-    val tileColor = Color.web(MazeTileColor, MazeTileColorOP)
-    val edgeColor = Color.web(MazeEdgeColor, MazeEdgeColorOP)
-    val backgroundColor = Color.web(BackgroundColor, BackgroundColorOP)
+    val tileColor = UIColors.MazeTileColor
+    val edgeColor = UIColors.MazeEdgeColor
     
     val gridPane = new Pane {
       prefWidth = mazeWidth
