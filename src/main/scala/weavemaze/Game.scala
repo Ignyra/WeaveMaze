@@ -77,6 +77,10 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
 
   protected var Start = false
 
+  def getRows:Int = this.rows
+  def getCols:Int = this.cols
+  def getMazeName:String = this.MazeName
+
   def applyDifficulty():Unit = {
 
     var timeDifficulty = difficulty

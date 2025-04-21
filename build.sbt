@@ -13,7 +13,8 @@ lazy val osName = System.getProperty("os.name") match {
 scalacOptions += "-deprecation"
 
 lazy val scalafxDependencies = Seq(
-  "org.scalafx" % "scalafx_3" % "20.0.0-R31"
+  "org.scalafx" % "scalafx_3" % "20.0.0-R31",
+  "org.scalatest" %% "scalatest" % "3.2.9" % Test
 ) ++ Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
   .map(m => "org.openjfx" % s"javafx-$m" % "21.0.6" classifier osName)
 
@@ -42,6 +43,3 @@ lazy val root = (project in file("."))
     fork := true
   )
 
-//lazy val root = (project in file("."))
-//  .aggregate(maze)
-//  .settings(commonSettings: _*)

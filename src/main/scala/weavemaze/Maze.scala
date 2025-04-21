@@ -19,6 +19,7 @@ import java.io.DataInputStream
 
 //Using bit representaions for efficincy
 import java.lang.Integer
+import java.io.IOException
 
 val N: Int = Integer.parseInt("000001", 2)
 val S: Int = Integer.parseInt("000010", 2)
@@ -233,8 +234,14 @@ class Maze(var height:Int, var width: Int, var bridgeDensity:Double) {
 
   def loadMaze(name:String):Unit = {
     val file = new DataInputStream(new FileInputStream(name + ".bin"))
-    this.height = file.readUnsignedShort()
-    this.width = file.readUnsignedShort()
+    val h = file.readUnsignedShort()
+    val w = file.readUnsignedShort()
+
+
+    if (h < MinRows || h > MaxRows || w < MinCols || w > MaxCols)
+      throw new IOException(s"Invalid maze dimensions in file: $h×$w")
+    this.height = h
+    this.width  = w
 
     this.grid = ArrayBuffer.fill[Cell](this.width, this.height)(null)
 
