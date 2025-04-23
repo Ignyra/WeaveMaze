@@ -152,7 +152,6 @@ class Player(val name:String, var cell:Cell, tiles:ArrayBuffer[ArrayBuffer[cellT
         box.rotation.byAngle = -90
       
       box.rotation.play()
-
   }
 
   this.updatePos()

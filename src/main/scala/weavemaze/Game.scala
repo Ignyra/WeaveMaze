@@ -14,7 +14,6 @@ import javafx.scene.image.WritableImage
 import scalafx.Includes._
 import scalafx.scene.control.Button
 import scalafx.geometry.Pos
-import scalafx.scene.input.{KeyCode, KeyEvent}
 import scalafx.beans.binding.Bindings
 import scalafx.application.Platform
 import scalafx.scene.paint.Color
@@ -26,6 +25,10 @@ import scalafx.scene.text.{Text, Font}
 import scalafx.geometry.Pos
 import scalafx.scene.shape.StrokeType.Inside
 import scalafx.scene.effect.Glow
+import scalafx.scene.effect.GaussianBlur
+import scalafx.scene.input.KeyEvent
+import scalafx.scene.input.KeyCode
+
 
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
@@ -34,8 +37,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.HashMap
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import scalafx.scene.effect.GaussianBlur
-
 
 
 
@@ -63,12 +64,13 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
   protected var remainingHints:Int = numTargets * hintsFactor
   protected var hintShown = false
   protected var MazeName:String = null
+  private var newMaze = true //load a new maze? or uses an existing one
   
   //Full Game Pane Init
   protected val GamePane = new Pane{}
   protected var scorePane: ScoreBar = null
   protected val scale = scalafx.scene.transform.Scale(1,1,0,0)
-  protected val FullPane = new Pane {children = Seq(GamePane)}
+  protected val FullPane = new Pane {}
   FullPane.getTransforms().add(scale)
   
   //Score Constants
@@ -109,6 +111,7 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
     this.maze = Maze(0,0,0)
     this.maze.loadMaze("data/mazes/" + filename)
     this.MazeName = filename
+    this.newMaze = false
     this.rows = this.maze.height
     this.cols = this.maze.width
     this.bridgeDensity = this.maze.bridgeDensity
@@ -116,15 +119,16 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
 
 
   def initMaze():Unit = {
-    if MazeName == null then //New Maze else use the loaded maze
+    if newMaze == true then //New Maze else use the loaded maze
       this.maze = Maze(rows, cols, bridgeDensity)
       this.maze.makeNewMaze()
+      newMaze = false
     this.maze_renderer = Maze_Renderer(maze)
     this.maze_renderer.generateMazeGui()
     this.solution_renderer = Solution_Renderer(maze_renderer.tiles, maze_renderer.mazeWidth, maze_renderer.mazeHeight)
     this.GamePane.children = Seq(maze_renderer.mazePane, solution_renderer.solutionPane)
     this.scorePane = ScoreBar(initTimeMS, numTargets, remainingHints, infinite, maze_renderer.mazeWidth, maze_renderer.mazeHeight, maze_renderer.mazeHeight * 0.12)
-    FullPane.children += scorePane
+    FullPane.children =  Seq(GamePane, scorePane)
     GamePane.effect = new GaussianBlur(8.0) {input = Glow(GlowLevel)}
   }
 
@@ -220,7 +224,6 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
     }
   }
   
-  //attach listeners
   def saveScreenshot(filename: String, pane:Pane = FullPane, res:Double = 2): Unit = {
     val tempX = pane.scaleX.value
     val tempY = pane.scaleY.value
@@ -258,12 +261,15 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
   }
   
   def resume():Unit = {
+    this.attach(MainScene)
     this.scorePane.resume()
   }
 
+  
+  //attach listeners
   def attach(scene:Scene):Unit = {
     //controls
-    scene.addEventHandler(KeyEvent.KeyPressed, (e:KeyEvent) => {
+    val pressHandler = (e:KeyEvent) => {
       if this.scorePane.isRunning then {
         e.code match {
           case KeyCode.Up => player.move(N)
@@ -272,9 +278,8 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
           case KeyCode.Right => player.move(E)
           case KeyCode.Enter => checkPlayerAtTarget()
           case KeyCode.Space => showHint()
-          case KeyCode.Escape => this.scorePane.pause()
+          case KeyCode.Escape => if !Done.isSwitching then this.scorePane.pause()
           case KeyCode.T => UIColors.switchTheme()
-          case KeyCode.B => WeaveMaze.stage.scene = Menu
           case _ => null
         }
         this.scorePane.addMoves(-this.player.getAndResetMoves)
@@ -287,24 +292,28 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
           this.Start = true
         }
       }
-    })
-    scene.addEventHandler(KeyEvent.KeyReleased, (e:KeyEvent) => {
+    }
+    scene.onKeyPressed = pressHandler
+    
+    val releaseHandler = (e:KeyEvent) => {
       if e.code == KeyCode.Space then {
         hideHint()
       }
-    })
+    }
+    scene.onKeyReleased = releaseHandler
 
     this.scorePane.onHintTimer = () => {
       if hintShown then {
         hideHint()
       }
     }
-
+  }
+  def detach(scene:Scene):Unit = {
+    scene.onKeyPressed = null
+    scene.onKeyReleased = null
   }
 
-  def start():Scene = {
-    this.Start = false
-    remainingHints = numTargets * hintsFactor
+  def start():sceneGeneral = {
     this.applyDifficulty()
     this.initMaze()
     this.initPlayers()
@@ -312,16 +321,26 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
     val w = maze_renderer.mazeWidth
     val h = maze_renderer.mazeHeight + scorePane.barHeight
     
-    val scene = new Scene(w, h) { //replace with Menu's Scene current width and height so transition looks smoother
-      content = FullPane
-      fill <== UIColors.BackgroundColor
-    }
-    this.attach(scene)
-    scale.xProperty().bind(scene.widthProperty().divide(w))  
-    scale.yProperty().bind(scene.heightProperty().divide(h))
-    Menu.gameScene = scene
-    Menu.game = this
-    scene
+    
+    scale.xProperty().bind(MainScene.widthProperty().divide(w))  
+    scale.yProperty().bind(MainScene.heightProperty().divide(h))
+    
+    //creates a general scene to be used by other sceneGenerals
+    Done.gameContent = sceneGeneral(FullPane)
+    Done.game = this
+    this.attach(MainScene)
+    Done.gameContent
+  }
+
+  def replay():Unit = {
+    //this.detach(MainScene)
+    this.Start = false
+    remainingHints = numTargets * hintsFactor
+    this.applyDifficulty()
+    this.initMaze()
+    this.initPlayers()
+    this.initTargets()
+    this.attach(MainScene)
   }
 
 }
@@ -430,13 +449,13 @@ class ScoreBar(private var remainingTimeMS:Int,val numTargets:Int, val nHints:In
 
       Platform.runLater{
         Done.score = score
-        WeaveMaze.stage.scene = Done //The scene should be shown first if we need to change UIelements.
         if isOver then //not pause
           if remainingTargets == 0 then Done.setDone("WON")
           else Done.setDone("LOST")
         else if infinite then Done.setDone("infinite") //pause infinite
         else Done.setDone() //pause normal
-        //WeaveMaze.stage.scene = Done
+        Done.game.detach(MainScene)
+        Done.gameContent.switch(Done, 1)
       }
 
     }

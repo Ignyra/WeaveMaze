@@ -40,6 +40,7 @@ lazy val root = (project in file("."))
         .mkString(System.getProperty("path.separator")),
       "--add-modules", "javafx.controls,javafx.fxml,javafx.media"
     ),
+    //javaOptions += "-Djavafx.pulseLogger=true", logging each pulse
     fork := true
   )
 

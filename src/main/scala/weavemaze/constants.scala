@@ -13,11 +13,15 @@ val SMOOTHTRANSITIONS = true
 
 
 val MaxRows:Int = 100
-val MaxCols: Int = 200
+val MaxCols: Int = 150
 val MaxBridges: Double = 0.9
 val MinRows: Int = 5
 val MinCols: Int = 5
 val MinBridgeDensity: Double = 0.1
+
+
+val StandardWidth = 1000
+val StandardHeight = 600
 
 
 object UIColors {
