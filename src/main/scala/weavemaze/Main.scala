@@ -21,6 +21,8 @@ object WeaveMaze extends JFXApp3 {
     
     val warmupStage = new Stage {
       scene = MainScene
+      width = StandardWidth
+      height = StandardHeight
     }
     val change1 = BooleanProperty(false)
     val change2 = BooleanProperty(false)
@@ -63,7 +65,6 @@ object WeaveMaze extends JFXApp3 {
         title = "Weave Maze"
         scene = MainScene
       }
-
     })
  }
 }

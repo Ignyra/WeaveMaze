@@ -28,7 +28,7 @@ import scalafx.scene.effect.Glow
 import scalafx.scene.effect.GaussianBlur
 import scalafx.scene.input.KeyEvent
 import scalafx.scene.input.KeyCode
-
+import scalafx.scene.SnapshotParameters
 
 import scala.util.Random
 import scala.collection.mutable.ArrayBuffer
@@ -229,20 +229,27 @@ class Game(name:String, difficulty:Double = 0.3, numTargets: Int = 3, var infini
     val tempY = pane.scaleY.value
     pane.scaleX = res
     pane.scaleY = res
-
-    val wImage = new WritableImage(
-      pane.layoutBounds().getWidth.toInt * res.toInt,
-      pane.layoutBounds().getHeight.toInt * res.toInt
-    )
-
-    pane.snapshot(null, wImage)
+    
+    pane.background = Background(Array(BackgroundFill(UIColors.BackgroundColor.value, null, Insets(0)))) //since the current pane isn't on scene, so there is no fill shown in it
+    
+    //pane.autosize()
+    //val wImage = new WritableImage(
+    //  Done.gameContent.layoutBounds().getWidth.toInt * res.toInt - res.toInt*StandardWidth, //issues with the translation animation
+    //  Done.gameContent.layoutBounds().getHeight.toInt * res.toInt //doesn't work, adds white height sometimes
+    //)
+    //pane.snapshot(null, wImage)
+    
+    val wImage = pane.snapshot(new SnapshotParameters(), null)
+    
     val bufferedImage = SwingFXUtils.fromFXImage(wImage, null)
     val file = new File(filename)
     file.getParentFile.mkdirs()
     ImageIO.write(bufferedImage, "png", new File(filename))
-
+    
+    pane.background = null
     pane.scaleX = tempX
     pane.scaleY = tempY
+
 
   }
 
